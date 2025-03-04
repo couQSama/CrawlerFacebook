@@ -1,85 +1,108 @@
-# def get_html(username, password, post_url, is_headless=False):
-#     with sync_playwright() as p:
-#         print('Crawling html...')
-#         browser = p.chromium.launch(headless=is_headless)
-#
-#         if os.path.exists('state.json'):
-#             with open('state.json', 'r') as f:
-#                 state = json.load(f)
-#             cookies = state.get('cookie', [])
-#
-#             if any(is_cookie_expired(cookie) for cookie in cookies):
-#                 login_and_save_state(browser, username, password, is_headless)
-#         else:
-#             login_and_save_state(browser, username, password)
-#
-#         context = browser.new_context(storage_state='state.json')
-#         page = context.new_page()
-#
-#         # Open post
-#         page.goto(post_url, timeout=120000, wait_until='domcontentloaded')
-#
-#         # Nhấn nút Phù hợp nhất và Tất cả bình luận để lấy hết bình luận
-#         page.locator(CSS_SELECTOR['text_most_relevant']).click()
-#         delay(page)
-#         page.locator(CSS_SELECTOR['text_all_comment']).click()
-#         delay(page)
-#
-#         # Di chuột ra giữa để cuộn
-#         viewport_width = 1280
-#         viewport_height = 800
-#         center_x = viewport_width // 2
-#         center_y = viewport_height // 2
-#         page.mouse.move(center_x, center_y)
-#
-#         # Lấy body của post (chiều cao của body phải thay đổi khi cuộn xuống để load cmt)
-#         post_body = page.locator(CSS_SELECTOR['class_post_body_div'])
-#         old_height = 0
-#         new_height = post_body.bounding_box()['height']
-#
-#         # Cuộn xuống cho đến khi chiều cao ko còn thay đổi == hết cmt để load
-#         while old_height != new_height:
+from selectors import CSS_SELECTOR
+from random import uniform
+from ultis import delay
+
+def click_all_view_reply_buttons(page):
+    while True:
+        view_reply_buttons = page.locator(CSS_SELECTOR['class_view_reply_button'])
+        button_count = view_reply_buttons.count()
+        if button_count == 0:
+            break
+        view_reply_buttons.nth(0).click()
+        delay(page)
+
+def click_all_view_more_buttons(page):
+    while True:
+        view_more_buttons = page.get_by_role('button', name='Xem thêm')
+        button_count = view_more_buttons.count()
+        if button_count == 0:
+            break
+        view_more_buttons.nth(0).click(force=True)
+        delay(page)
+
+def scroll_to_load_comments(page):
+    # Di chuột vào giữa để cuộn
+    viewport_width = 1280
+    viewport_height = 800
+    center_x = viewport_width // 2
+    center_y = viewport_height // 2
+    page.mouse.move(center_x, center_y)
+
+    body_post = page.locator(CSS_SELECTOR['class_body_post'])
+    old_height, new_height = 0, body_post.bounding_box()['height']
+    while old_height != new_height:
+        # Nhấn các nút xem phản hồi hiện có
+        click_all_view_reply_buttons(page)
+        # Nhấn các nút xem thêm có
+        click_all_view_more_buttons(page)
+
+        # Cuộn xuống
+        px_to_scroll = uniform(2000, 3000)
+        page.mouse.wheel(0, px_to_scroll)
+        old_height = new_height
+        new_height = body_post.bounding_box()['height']
+        delay(page)
+
+    return body_post
+
+def get_post_html(page, post_url):
+    page.goto(post_url, timeout=120000, wait_until='domcontentloaded')
+    delay(page)
+
+    # Thao tác xổ tất cả bình luận
+    most_popular_button = page.locator(CSS_SELECTOR['class_most_popular'])
+    most_popular_button.scroll_into_view_if_needed()
+    most_popular_button.click()
+    delay(page)
+    page.locator(CSS_SELECTOR['class_most_popular_menu']).nth(2).click()
+    delay(page)
+
+    post_full_content = scroll_to_load_comments(page)
+
+    return post_full_content.inner_html()
+
+#     while old_height != new_height:
+#         while True:
 #             while True:
-#                 while True:
-#                     view_more_buttons = page.get_by_role('button', name='Xem thêm')
-#                     button_count = view_more_buttons.count()
-#                     print(f'more:{button_count}')
-#                     if button_count == 0:
-#                         break
-#
-#                     button = view_more_buttons.nth(0)
-#                     button.click(force=True)
-#                     delay(page)
-#                 # Click vao xem tat ca phan hoi
-#                 view_replies_buttons = page.locator(CSS_SELECTOR['class_view_replies_div'])
-#                 button_count = view_replies_buttons.count()
-#                 print(f'rep:{button_count}')
-#
+#                 view_more_buttons = page.get_by_role('button', name='Xem thêm')
+#                 button_count = view_more_buttons.count()
+#                 print(f'more:{button_count}')
 #                 if button_count == 0:
 #                     break
 #
-#                 button = view_replies_buttons.nth(0)
-#                 button.scroll_into_view_if_needed()
+#                 button = view_more_buttons.nth(0)
 #                 button.click(force=True)
 #                 delay(page)
+#             # Click vao xem tat ca phan hoi
+#             view_replies_buttons = page.locator(CSS_SELECTOR['class_view_replies_div'])
+#             button_count = view_replies_buttons.count()
+#             print(f'rep:{button_count}')
 #
-#             px = uniform(3000, 4000)
-#             page.mouse.wheel(0, px)
+#             if button_count == 0:
+#                 break
+#
+#             button = view_replies_buttons.nth(0)
+#             button.scroll_into_view_if_needed()
+#             button.click(force=True)
 #             delay(page)
 #
-#             old_height = new_height
-#             new_height = post_body.bounding_box()['height']
-#
+#         px = uniform(3000, 4000)
+#         page.mouse.wheel(0, px)
 #         delay(page)
-#         page.wait_for_load_state(state='load')
 #
-#         soup = BeautifulSoup(page.content(), 'lxml')
+#         old_height = new_height
+#         new_height = post_body.bounding_box()['height']
 #
-#         body = soup.select(CSS_SELECTOR['class_post_body_to_soup_div'])
-#         browser.close()
-#         print('Done!')
+#     delay(page)
+#     page.wait_for_load_state(state='load')
 #
-#         return body[0].prettify()
+#     soup = BeautifulSoup(page.content(), 'lxml')
+#
+#     body = soup.select(CSS_SELECTOR['class_post_body_to_soup_div'])
+#     browser.close()
+#     print('Done!')
+#
+#     return body[0].prettify()
 #
 # def extract_comment_with_emoji(comment_div):
 #     comment_text = ""
@@ -175,4 +198,4 @@
 #         return current_count
 #     else:
 #         return 0
-
+#
