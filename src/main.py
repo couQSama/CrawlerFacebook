@@ -8,7 +8,7 @@ if __name__ == '__main__':
     username = ''
     password = ''
     state_path = 'state.json'
-    post_url = 'https://www.facebook.com/share/p/16NQdActFn/'
+    post_url = ''
 
     if post_exists(post_url):
         print('Post already exists')
