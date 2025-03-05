@@ -5,8 +5,8 @@ from extract_post_content import get_post_dict
 from utils import save_post, post_exists, save_post_url
 
 if __name__ == '__main__':
-    username = ''
-    password = ''
+    username = 'huytin0392460501'
+    password = 'chuong.05'
     state_path = 'state.json'
     post_url = 'https://www.facebook.com/share/p/16NQdActFn/'
 
@@ -22,6 +22,6 @@ if __name__ == '__main__':
 
         post = get_post_dict(html)
         post['post_url'] = post_url
-        save_post(post, folder=r'../data')
+        save_post(post, folder='../data')
         print('Done!')
 

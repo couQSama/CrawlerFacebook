@@ -13,8 +13,7 @@ def is_cookie_expired(cookie):
         return expires < datetime.now()
     return False
 
-def save_post(post, folder='.', default_filename='data', extension='json', indent=4, ensure_ascii=False):
-    folder = os.path.abspath(folder)
+def save_post(post, folder, default_filename='data', extension='json', indent=4, ensure_ascii=False):
     os.makedirs(folder, exist_ok=True)
     filename = f'{default_filename}.{extension}'
     filepath = os.path.join(folder, filename)
@@ -31,7 +30,7 @@ def save_post(post, folder='.', default_filename='data', extension='json', inden
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(list_post, f, indent=4, ensure_ascii=False)
 
-def post_exists(post_url, url_filename='./data/post_url.json'):
+def post_exists(post_url, url_filename='../data/post_url.json'):
     if not os.path.exists(url_filename):
         return False
 
@@ -43,7 +42,7 @@ def post_exists(post_url, url_filename='./data/post_url.json'):
 
     return False
 
-def save_post_url(post_url, url_filename='./data/post_url.json'):
+def save_post_url(post_url, url_filename='../data/post_url.json'):
     os.makedirs(os.path.dirname(url_filename), exist_ok=True)
 
     if os.path.exists(url_filename):
