@@ -2,7 +2,7 @@ import json
 import os
 from random import randint
 from selectors import CSS_SELECTOR
-from ultis import delay, is_cookie_expired
+from utils import delay, is_cookie_expired
 
 def login_facebook_and_save_state(browser, username, password, state_path):
     context = browser.new_context()
