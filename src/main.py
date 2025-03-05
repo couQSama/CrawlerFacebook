@@ -2,7 +2,7 @@ from playwright.sync_api import sync_playwright
 from login_facebook import login_facebook
 from crawler import get_post_html
 from extract_post_content import get_post_dict
-from utils import save_post_incrementally, post_exists, save_post_url
+from utils import save_post, post_exists, save_post_url
 
 if __name__ == '__main__':
     username = 'huytin0392460501'
@@ -21,7 +21,7 @@ if __name__ == '__main__':
             browser.close()
 
         post = get_post_dict(html)
-        post['post']['post_url'] = post_url
-        save_post_incrementally(post, folder=r'.\data')
-
+        post['post_url'] = post_url
+        save_post(post, folder=r'../data')
+        print('Done!')
 

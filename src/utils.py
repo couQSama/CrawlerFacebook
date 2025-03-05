@@ -13,19 +13,23 @@ def is_cookie_expired(cookie):
         return expires < datetime.now()
     return False
 
-def save_post_incrementally(post, folder='.', default_filename='data', extension='json', indent=4, ensure_ascii=False):
+def save_post(post, folder='.', default_filename='data', extension='json', indent=4, ensure_ascii=False):
+    folder = os.path.abspath(folder)
     os.makedirs(folder, exist_ok=True)
-    index = 1
-    while True:
-        filename = f'{default_filename}_{index}.{extension}'
-        filepath = os.path.join(folder, filename)
+    filename = f'{default_filename}.{extension}'
+    filepath = os.path.join(folder, filename)
 
-        if not os.path.exists(filepath):
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(post, f, indent=indent, ensure_ascii=ensure_ascii)
-            print(f"Data saved to {filepath}")
-            break
-        index += 1
+    if not os.path.exists(filepath):
+        list_post = [post]
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(list_post, f, indent=indent, ensure_ascii=ensure_ascii)
+    else:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            list_post = json.load(f)
+        list_post.append(post)
+
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(list_post, f, indent=4, ensure_ascii=False)
 
 def post_exists(post_url, url_filename='./data/post_url.json'):
     if not os.path.exists(url_filename):
