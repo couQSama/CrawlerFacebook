@@ -24,6 +24,22 @@ def get_content_in_cmt(div_cmt):
     else:
         return ''
 
+def get_post_content(soup):
+    span_content_post = soup.select_one(CSS_SELECTOR['class_span_content_post'])
+    if span_content_post:
+        # thêm icon vào nội dung
+        for img_tag in span_content_post.find_all('img'):
+            alt_text = img_tag.get('alt', '')  # icon nằm trong alt
+            img_tag.replace_with(alt_text)
+
+        # loại bỏ tag tên
+        for a_tag in span_content_post.find_all('a'):
+            a_tag.decompose()
+
+        return span_content_post.text
+    else:
+        return ''
+
 def get_post_dict(html):
     soup = BeautifulSoup(html, 'lxml')
 
@@ -34,6 +50,9 @@ def get_post_dict(html):
         'cmt_count': 0,
         'comments': []
     }
+
+    content = get_post_content(soup)
+    post['post_content'] = content
 
     # xem doc phần 6
     list_div_cmt = soup.select(CSS_SELECTOR['class_div_cmt'])
@@ -47,7 +66,6 @@ def get_post_dict(html):
         cmt_lv1_dict = create_cmt_dict(content)
         post['comments'].append(cmt_lv1_dict)
         post['cmt_count'] += 1
-
 
         # cmt lv2 & lv3
         div_contain_all_cmt_lv2_lv3 = list_div_cmt_lv[1]
