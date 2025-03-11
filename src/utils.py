@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 def delay(page):
-    time_to_wait = random.uniform(1000, 2000)
+    time_to_wait = random.uniform(1000, 1500)
     page.wait_for_timeout(time_to_wait)
 
 def is_cookie_expired(cookie):
@@ -30,28 +30,15 @@ def save_post(post, folder, default_filename='data', extension='json', indent=4,
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(list_post, f, indent=4, ensure_ascii=False)
 
-def post_exists(post_url, url_filename='../data/post_url.json'):
+def post_exists(post_url, url_filename='../data/data.json'):
     if not os.path.exists(url_filename):
         return False
 
     with open(url_filename, 'r', encoding='utf-8') as f:
-        list_url = json.load(f)
+        posts = json.load(f)
 
-    if post_url in list_url:
-        return True
+    for post in posts:
+        if post['post_url'] == post_url:
+            return True
 
     return False
-
-def save_post_url(post_url, url_filename='../data/post_url.json'):
-    os.makedirs(os.path.dirname(url_filename), exist_ok=True)
-
-    if os.path.exists(url_filename):
-        with open(url_filename, 'r', encoding='utf-8') as f:
-            list_url = json.load(f)
-    else:
-        list_url = []
-
-    list_url.append(post_url)
-
-    with open(url_filename, 'w', encoding='utf-8') as f:
-        json.dump(list_url, f, indent=4, ensure_ascii=False)
