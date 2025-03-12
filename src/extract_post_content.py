@@ -8,6 +8,15 @@ def create_cmt_dict(cmt_content):
         'comments': []
     }
 
+def get_content_keep_space(span):
+    div_sentences = span.select('div[dir="auto"][style="text-align: start;"]')
+    content = ''
+
+    if div_sentences:
+        for div in div_sentences:
+            content += (div.text + ' ')
+    return content
+
 def get_content_in_cmt(div_cmt):
     span_content_cmt = div_cmt.select_one(CSS_SELECTOR['class_span_content_cmt'])
     if span_content_cmt:
@@ -20,12 +29,15 @@ def get_content_in_cmt(div_cmt):
         for a_tag in span_content_cmt.find_all('a'):
             a_tag.decompose()
 
-        return span_content_cmt.text
+        content = get_content_keep_space(span_content_cmt)
+
+        return content
     else:
         return ''
 
 def get_post_content(soup):
     span_content_post = soup.select_one(CSS_SELECTOR['class_span_content_post'])
+
     if span_content_post:
         # thêm icon vào nội dung
         for img_tag in span_content_post.find_all('img'):
@@ -36,7 +48,10 @@ def get_post_content(soup):
         for a_tag in span_content_post.find_all('a'):
             a_tag.decompose()
 
-        return span_content_post.text
+        content = get_content_keep_space(span_content_post)
+
+        return content
+
     else:
         return ''
 
@@ -51,9 +66,11 @@ def get_post_dict(html):
         'comments': []
     }
 
+    # get content post
     content = get_post_content(soup)
     post['post_content'] = content
 
+    # get comment
     # xem doc phần 6
     list_div_cmt = soup.select(CSS_SELECTOR['class_div_cmt'])
     for i, div_cmt in enumerate(list_div_cmt):

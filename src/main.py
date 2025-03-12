@@ -2,12 +2,13 @@ from playwright.sync_api import sync_playwright
 from login_facebook import login_facebook
 from crawler import get_post_html
 from extract_post_content import get_post_dict
+from src.utils import save_html, load_html
 from utils import save_post, post_exists
 
 if __name__ == '__main__':
     username = ''
     password = ''
-    state_path = 'state.json'
+    state_path = ''
     post_url = ''
 
     if post_exists(post_url):
