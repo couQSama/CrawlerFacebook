@@ -42,3 +42,12 @@ def post_exists(post_url, url_filename='../data/data.json'):
             return True
 
     return False
+
+def save_html(html):
+    with open('post.html', 'w', encoding='utf-8') as f:
+        f.write(html)
+
+def load_html():
+    with open('post.html', 'r', encoding='utf-8') as f:
+        html = f.read()
+    return html
